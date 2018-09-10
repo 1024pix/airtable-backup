@@ -36,10 +36,12 @@ async function bases (email, password, apiInfo = true) {
     bases = await Promise.props(_.mapValues(bases, async (base, baseId) => {
       const apiDocs = await requestWithCookies.get(`${baseUrl}/${baseId}/api/docs#curl/introduction`)
       const apiKey = apiDocs.data.match(/data-api-key="(\S*)"/)[1]
+      const apiData = JSON.parse(apiDocs.data.match(/window\.application.+?({.*})/)[1])
 
       return _.merge(base, {
         apiDocs: apiDocs.data,
-        apiKey: apiKey
+        apiKey: apiKey,
+        apiData: apiData
       })
     }))
   }
@@ -127,6 +129,7 @@ function backupBase (baseId, base, attachments = true) {
   const backupDir = createDir(`backups/${baseId}/${dateTime.toISOString()}`)
 
   fs.writeFileSync(`${backupDir}/apiDocs.html`, base.apiDocs)
+  fs.writeFileSync(`${backupDir}/apiData.json`, JSON.stringify(base.apiData, undefined, 2))
 
   _.forEach(base.tables, (tableName, tableId) => {
     backupTable(backupDir, baseId, base, tableId, attachments)
