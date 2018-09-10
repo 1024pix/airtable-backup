@@ -20,12 +20,7 @@ async function bases (email, password, apiInfo = true) {
   const loginForm = await requestWithCookies.get(`${baseUrl}/login`)
   const _csrf = loginForm.data.match(/name="_csrf"\s*value="(\S*)"/)[1]
 
-  const session = await requestWithCookies.post(`${baseUrl}/auth/login`, {_csrf, email, password})
-  if (session.data.indexOf('redirectAfterSuccessfulLogin') === -1) {
-    throw new Error('NotLoggedIn')
-  }
-
-  const app = await requestWithCookies.get(`${baseUrl}/auth/redirectAfterSuccessfulLogin`)
+  const app = await requestWithCookies.post(`${baseUrl}/auth/login`, {_csrf, email, password})
   const initData = JSON.parse(app.data.match(/initData.+?({.*})/)[1])
 
   let bases = _.mapValues(initData['rawApplications'], (app) => {
