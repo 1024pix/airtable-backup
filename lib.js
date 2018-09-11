@@ -50,17 +50,12 @@ async function bases (email, password, apiInfo = true) {
 }
 
 function tableRecords (apiKey, baseId, tableId, done) {
-  let allRecords = []
-
   const table = new Airtable({apiKey: apiKey}).base(baseId)(tableId)
-  table.select().eachPage((pageRecords, fetchNextPage) => {
-    allRecords = allRecords.concat(_.map(pageRecords, (record) => { return record._rawJson }))
-    setTimeout(fetchNextPage, 500) // API has a limit of 4rpm, wait a little more to be sure
-  }, (error) => {
+  table.select().all((error, allRecords) => {
     if (error) {
       done(error, null)
     } else {
-      done(null, allRecords)
+      done(null, _.map(allRecords, (record) => record._rawJson))
     }
   })
 }
