@@ -88,14 +88,14 @@ function createDir (path) {
   return path
 }
 
-function backupAttachments (attachmentsPath, attachments) {
+function backupAttachments (attachmentsPath, attachments, allDone) {
   async.eachLimit(attachments, 10, (attachment, done) => {
     axios.get(attachment.url, {responseType: 'arraybuffer'}).then((download) => {
       const filePath = `${attachmentsPath}/${attachment.id}${path.extname(attachment.filename)}`
       fs.writeFileSync(filePath, download.data)
       done()
     })
-  })
+  }, allDone)
 }
 
 function backupTable (backupDir, baseId, base, tableId, attachments) {
@@ -110,7 +110,13 @@ function backupTable (backupDir, baseId, base, tableId, attachments) {
       if (attachments) {
         const dir = createDir(`${backupDir}/attachments`)
         const attachments = attachmentsFromRecords(records)
-        backupAttachments(dir, attachments)
+        backupAttachments(dir, attachments, (error) => {
+          if (error) {
+            console.log(`${base.name} ${tableName} attachments ERROR: ${error} ×`)
+          } else {
+            console.log(`${base.name} ${tableName} attachments ✔`)
+          }
+        })
       }
     }
   })
