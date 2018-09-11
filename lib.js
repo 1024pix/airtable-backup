@@ -105,6 +105,9 @@ function backupTable (backupDir, baseId, base, tableId, attachments) {
       console.log(`${base.name} ${tableName} ERROR: ${error} ×`)
     } else {
       fs.writeFileSync(`${backupDir}/${tableId}.json`, JSON.stringify(records, undefined, 2))
+
+      fs.symlinkSync(`${tableId}.json`, `${backupDir}/${tableName}.json`)
+
       console.log(`${base.name} ${tableName} records ✔`)
 
       if (attachments) {
