@@ -136,10 +136,12 @@ function backupBase (baseId, base, attachments = true) {
   })
 }
 
-function backupBases (email, password) {
+function backupBases (email, password, baseFilter) {
   bases(email, password).then((bases) => {
     _.forEach(bases, (base, baseId) => {
-      backupBase(baseId, base, true)
+      if (!baseFilter || baseId === baseFilter || base.name === baseFilter) {
+        backupBase(baseId, base, process.env.AIRTABLE_BACKUP_ATTACHMENTS === 'true')
+      }
     })
   }).catch((error) => {
     console.log(error)
