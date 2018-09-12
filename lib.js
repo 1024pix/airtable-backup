@@ -98,6 +98,11 @@ function backupAttachments (attachmentsPath, attachments, allDone) {
   }, allDone)
 }
 
+function createLink (parentDir, linkName, linkTarget) {
+  try { fs.unlinkSync(`${parentDir}/${linkName}`) } catch(e) {}
+  fs.symlinkSync(linkTarget, `${parentDir}/${linkName}`)
+}
+
 function backupTable (backupDir, baseId, base, tableId, attachments) {
   tableRecords(base.apiKey, baseId, tableId, (error, records) => {
     const tableName = base.tables[tableId]
@@ -106,7 +111,7 @@ function backupTable (backupDir, baseId, base, tableId, attachments) {
     } else {
       fs.writeFileSync(`${backupDir}/${tableId}.json`, JSON.stringify(records, undefined, 2))
 
-      fs.symlinkSync(`${tableId}.json`, `${backupDir}/${tableName}.json`)
+      createLink(backupDir, `${tableName}.json`, `${tableId}.json`)
 
       console.log(`${base.name} ${tableName} records ✔`)
 
@@ -129,8 +134,13 @@ function backupBase (baseId, base, attachments = true) {
   createDir('backups')
   createDir(`backups/${baseId}`)
 
+  createLink('backups', base.name, baseId)
+
   const dateTime = new Date()
-  const backupDir = createDir(`backups/${baseId}/${dateTime.toISOString()}`)
+  const backupDirName = dateTime.toISOString()
+  const backupDir = createDir(`backups/${baseId}/${backupDirName}`)
+
+  createLink(`backups/${baseId}`, "latest", backupDirName)
 
   fs.writeFileSync(`${backupDir}/apiDocs.html`, base.apiDocs)
   fs.writeFileSync(`${backupDir}/apiData.json`, JSON.stringify(base.apiData, undefined, 2))
