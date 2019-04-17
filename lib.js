@@ -7,6 +7,7 @@ const Airtable = require('airtable')
 const fs = require('fs')
 const path = require('path')
 const async = require('async')
+const jsonStable = require('json-stable-stringify')
 
 async function bases (email, password, apiInfo = true) {
   const baseUrl = 'https://airtable.com'
@@ -109,7 +110,7 @@ function backupTable (backupDir, baseId, base, tableId, attachments) {
     if (error) {
       console.log(`${base.name} ${tableName} ERROR: ${error} ×`)
     } else {
-      fs.writeFileSync(`${backupDir}/${tableId}.json`, JSON.stringify(records, undefined, 2))
+      fs.writeFileSync(`${backupDir}/${tableId}.json`, jsonStable(records, { space: 2 }))
 
       createLink(backupDir, `${tableName}.json`, `${tableId}.json`)
 
@@ -143,7 +144,7 @@ function backupBase (baseId, base, attachments = true) {
   createLink(`backups/${baseId}`, "latest", backupDirName)
 
   fs.writeFileSync(`${backupDir}/apiDocs.html`, base.apiDocs)
-  fs.writeFileSync(`${backupDir}/apiData.json`, JSON.stringify(base.apiData, undefined, 2))
+  fs.writeFileSync(`${backupDir}/apiData.json`, jsonStable(base.apiData, { space: 2 }))
 
   _.forEach(base.tables, (tableName, tableId) => {
     backupTable(backupDir, baseId, base, tableId, attachments)
